@@ -153,7 +153,14 @@ class Track:
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
         self.features.append(detection.feature)
-
+        
+        if detection.color is not None:
+            if len(self.colors) < 300:
+                self.colors.append(detection.color)
+            else:
+                del self.colors[0]
+                self.colors.append(detection.color)
+                
         self.hits += 1
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:

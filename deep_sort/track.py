@@ -130,7 +130,7 @@ class Track:
         self.last_mean = self.mean
         self.last_covariance = self.covariance
         if len(self.colors) > 0:
-            self.last_color = self.colors[-1]
+            self.last_color = self.get_color() #self.colors[-1]
         
     
     def predict(self, kf):

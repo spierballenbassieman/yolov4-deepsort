@@ -151,7 +151,8 @@ class Track:
         self.age += 1
         self.time_since_update += 1
         
-        
+        self.set_last() # ADDED BY BAS
+
         
 
     def update(self, kf, detection):
@@ -191,7 +192,6 @@ class Track:
             self.state = TrackState.Confirmed
             
             
-        self.set_last() # ADDED BY BAS
         
 
     def mark_missed(self):

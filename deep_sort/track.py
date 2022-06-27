@@ -124,6 +124,11 @@ class Track:
         else:
             return None
         
+    def set_last(self):
+        self.last_mean = self.mean
+        self.last_covariance = self.covariance
+        self.last_color = self.colors[-1]
+        
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
         Kalman filter prediction step.
@@ -134,6 +139,9 @@ class Track:
             The Kalman filter.
 
         """
+        
+        self.set_last() # ADDED BY BAS
+        
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
         self.time_since_update += 1
@@ -152,7 +160,15 @@ class Track:
         """
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
-        self.features.append(detection.feature)
+        
+        ### this part used to be just the features.append(detection.feature)
+        if self.last_color == detection.color:
+            self.features.append(detection.feature)
+        elif self.last_color != detction.color:
+            self.mean = self.last_mean
+            self.covariance = self.last_covariance
+            self.features.append(detection.feature)
+        ###
         
         if detection.color is not None:
             if len(self.colors) < 300:

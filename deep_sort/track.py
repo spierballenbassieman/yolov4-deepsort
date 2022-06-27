@@ -144,7 +144,7 @@ class Track:
 
         """
         
-        self.set_last() # ADDED BY BAS
+        
         
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
@@ -188,6 +188,10 @@ class Track:
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
+            
+            
+        self.set_last() # ADDED BY BAS
+        
 
     def mark_missed(self):
         """Mark this track as missed (no association at the current time step).

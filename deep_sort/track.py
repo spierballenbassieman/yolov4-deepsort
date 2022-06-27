@@ -113,6 +113,13 @@ class Track:
     def get_class(self):
         return self.class_name
 
+    def get_color(self):
+        """Return color that has been detected most often for this track"""
+        if self.colors:
+            return max(set(self.colors), key=self.colors.count)
+        else:
+            return None
+        
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
         Kalman filter prediction step.

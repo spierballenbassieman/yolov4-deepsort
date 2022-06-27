@@ -140,11 +140,14 @@ class Track:
 
         """
         
-        self.set_last() # ADDED BY BAS
+        
         
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
         self.time_since_update += 1
+        
+        self.set_last() # ADDED BY BAS
+        
 
     def update(self, kf, detection):
         """Perform Kalman filter measurement update step and update the feature

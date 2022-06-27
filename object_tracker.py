@@ -38,11 +38,19 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
+flags.DEFINE_list('jersey_colors', ['white', 'blue'], 'list of jersey colors Team1, Team 2, optional: other')
+flags.DEFINE_float('color_threshold', 0.0, 'color detection min percentage to assign jersey color to player')
+flags.DEFINE_float('cosine', 0.4, 'max cosine distance')
+flags.DEFINE_float('nms_overlap', 1.0, 'NMS max overlap')
+flags.DEFINE_integer('max_age', 60, 'deep sort max age parameter')
+flags.DEFINE_integer('n_init', 3, 'deep sort nr init parameter')
+
 def main(_argv):
     # Definition of the parameters
-    max_cosine_distance = 0.4
+    max_cosine_distance = FLAGS.cosine
     nn_budget = None
-    nms_max_overlap = 1.0
+    nms_max_overlap = FLAGS.nms_overlap
+    jersey_colors = FLAGS.jersey_colors
     
     # initialize deep sort
     model_filename = 'model_data/mars-small128.pb'
@@ -50,7 +58,7 @@ def main(_argv):
     # calculate cosine distance metric
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     # initialize tracker
-    tracker = Tracker(metric)
+    tracker = Tracker(metric, max_age=FLAGS.max_age, n_init=FLAGS.n_init)
 
     # load configuration for object detector
     config = ConfigProto()
@@ -157,10 +165,10 @@ def main(_argv):
         class_names = utils.read_class_names(cfg.YOLO.CLASSES)
 
         # by default allow all classes in .names file
-        allowed_classes = list(class_names.values())
+        #allowed_classes = list(class_names.values())
         
         # custom allowed classes (uncomment line below to customize tracker for only people)
-        #allowed_classes = ['person']
+        allowed_classes = ['person', 'sports ball']
 
         # loop through objects and use class index to get class name, allow only classes in allowed_classes list
         names = []
@@ -182,13 +190,23 @@ def main(_argv):
         scores = np.delete(scores, deleted_indx, axis=0)
 
         # encode yolo detections and feed to tracker
-        features = encoder(frame, bboxes)
-        detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(bboxes, scores, names, features)]
+        #features = encoder(frame, bboxes)
+        #detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(bboxes, scores, names, features)]
 
         #initialize color map
-        cmap = plt.get_cmap('tab20b')
-        colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
-
+        #cmap = plt.get_cmap('tab20b')
+        #colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
+        
+        # encode yolo detections and feed to tracker
+        features = encoder(frame, bboxes)
+        
+        if jersey_colors:
+            detections = [Detection(bbox, score, class_name, feature, color) for bbox, score, class_name, feature, color
+                          in zip(bboxes, scores, names, features, colors)]
+        else:
+            detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature
+                          in zip(bboxes, scores, names, features)]
+            
         # run non-maxima supression
         boxs = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
@@ -206,10 +224,20 @@ def main(_argv):
                 continue 
             bbox = track.to_tlbr()
             class_name = track.get_class()
+            jersey_color = track.get_color()
+            if jersey_color == jersey_colors[0]:
+                color = [255, 0, 0]
+                team_name = 'Team 1'
+            elif jersey_color == jersey_colors[1]:
+                color = [0, 0, 255]
+                team_name = 'Team 2'
+            else:
+                color = [105, 105, 105]
+                team_name = 'Other'
             
         # draw bbox on screen
-            color = colors[int(track.track_id) % len(colors)]
-            color = [i * 255 for i in color]
+            #color = colors[int(track.track_id) % len(colors)]
+            #color = [i * 255 for i in color]
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
             cv2.putText(frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)

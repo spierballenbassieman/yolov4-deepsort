@@ -86,6 +86,8 @@ class Track:
             self.colors.append(color)
             
         self.last_color = None # ADDED BY BAS
+        self.last_mean = None
+        self.last_covariance = None
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,

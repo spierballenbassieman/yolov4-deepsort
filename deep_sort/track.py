@@ -164,7 +164,7 @@ class Track:
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
             self.features.append(detection.feature)
-        elif self.last_color != detction.color:
+        elif self.last_color != detection.color:
             #self.mean = self.last_mean
             #self.covariance = self.last_covariance
             self.features.append(detection.feature)

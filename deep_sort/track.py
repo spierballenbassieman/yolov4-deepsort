@@ -84,6 +84,8 @@ class Track:
         self.colors = []
         if color is not None:
             self.colors.append(color)
+            
+         self.last_color = None # ADDED BY BAS
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -127,8 +129,10 @@ class Track:
     def set_last(self):
         self.last_mean = self.mean
         self.last_covariance = self.covariance
-        self.last_color = self.colors[-1]
+        if len(self.colors) > 0:
+            self.last_color = self.colors[-1]
         
+    
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
         Kalman filter prediction step.

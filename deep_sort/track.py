@@ -131,7 +131,6 @@ class Track:
     def set_last(self):
         self.last_mean = self.mean
         self.last_covariance = self.covariance
-        self.last_color = self.get_color() #self.colors[-1]
         
     
     def predict(self, kf):
@@ -171,7 +170,7 @@ class Track:
             self.mean, self.covariance, detection.to_xyah())
         
         ### this part used to be just the features.append(detection.feature)
-        if self.last_color == detection.color:
+        if self.get_color() == detection.color:
             self.features.append(detection.feature)
         elif self.get_color() != detection.color:
             self.mean = self.last_mean

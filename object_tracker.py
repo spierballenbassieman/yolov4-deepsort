@@ -197,6 +197,11 @@ def main(_argv):
         #cmap = plt.get_cmap('tab20b')
         #colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
         
+        # detect jersey color
+        patches = [gdet.extract_image_patch(frame, box, [box[3], box[2]]) for box in bboxes]
+        colors = [find_color(patch, FLAGS.jersey_colors, threshold = FLAGS.color_threshold)
+                  for patch in patches]
+        
         # encode yolo detections and feed to tracker
         features = encoder(frame, bboxes)
         

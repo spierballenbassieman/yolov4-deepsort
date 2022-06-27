@@ -85,9 +85,9 @@ class Track:
         if color is not None:
             self.colors.append(color)
             
-        self.last_color = color # ADDED BY BAS
-        self.last_mean = mean
-        self.last_covariance = covariance
+        #self.last_color = color # ADDED BY BAS
+        #self.last_mean = mean
+        #self.last_covariance = covariance
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -145,13 +145,13 @@ class Track:
 
         """
         
-        
+        self.set_last() # ADDED BY BAS
         
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
         self.time_since_update += 1
         
-        self.set_last() # ADDED BY BAS
+        
 
         
 
@@ -173,7 +173,7 @@ class Track:
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
             self.features.append(detection.feature)
-        elif self.last_color != detection.color:
+        elif self.get_color() != detection.color:
             self.mean = self.last_mean
             self.covariance = self.last_covariance
             self.features.append(detection.feature)

@@ -85,7 +85,7 @@ class Track:
         if color is not None:
             self.colors.append(color)
             
-         self.last_color = None # ADDED BY BAS
+        self.last_color = None # ADDED BY BAS
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,

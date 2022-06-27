@@ -140,7 +140,7 @@ class Track:
 
         """
         
-        #self.set_last() # ADDED BY BAS
+        self.set_last() # ADDED BY BAS
         
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
@@ -162,12 +162,12 @@ class Track:
             self.mean, self.covariance, detection.to_xyah())
         
         ### this part used to be just the features.append(detection.feature)
-        #if self.last_color == detection.color:
-        self.features.append(detection.feature)
-        #elif self.last_color != detection.color:
-            #self.mean = self.last_mean
-            #self.covariance = self.last_covariance
-         #   self.features.append(detection.feature)
+        if self.last_color == detection.color:
+            self.features.append(detection.feature)
+        elif self.last_color != detection.color:
+            self.mean = self.last_mean
+            self.covariance = self.last_covariance
+            self.features.append(detection.feature)
         ###
         
         if detection.color is not None:

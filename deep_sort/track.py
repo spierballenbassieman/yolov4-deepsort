@@ -174,13 +174,6 @@ class Track:
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
             self.features.append(detection.feature)
-            
-            if detection.color is not None:
-                if len(self.colors) < 300:
-                    self.colors.append(detection.color)
-                else:
-                    del self.colors[0]
-                    self.colors.append(detection.color)
                 
         elif self.last_color != detection.color:
             self.mean = self.last_mean
@@ -189,6 +182,13 @@ class Track:
 #             if len(self.colors) > 0:
 #                 self.colors.pop()
         ###
+    
+        if detection.color is not None:
+                if len(self.colors) < 300:
+                    self.colors.append(detection.color)
+                else:
+                    del self.colors[0]
+                    self.colors.append(detection.color)
         
         
         

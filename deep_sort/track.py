@@ -85,7 +85,7 @@ class Track:
         if color is not None:
             self.colors.append(color)
             
-        #self.last_color = color # ADDED BY BAS
+        self.last_color = color # ADDED BY BAS
         #self.last_mean = mean
         #self.last_covariance = covariance
 

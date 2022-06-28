@@ -151,7 +151,7 @@ class Track:
         self.age += 1
         self.time_since_update += 1
         
-        self.set_last() # ADDED BY BAS
+        
 
         
 
@@ -193,7 +193,7 @@ class Track:
                     self.last_color = detection.color
 
         
-        
+        self.set_last() # ADDED BY BAS
                 
         self.hits += 1
         self.time_since_update = 0

@@ -174,8 +174,8 @@ class Track:
             self.covariance = self.last_covariance # ADDED BY BAS
             self.features.append(detection.feature)
             
-            if len(self.colors) > 0: # ADDED BY BAS
-               self.colors.pop()
+#             if len(self.colors) > 0: # ADDED BY BAS
+#                self.colors.pop()
     
         if detection.color is not None:
                 if len(self.colors) < 300:

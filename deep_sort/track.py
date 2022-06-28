@@ -144,13 +144,13 @@ class Track:
 
         """
         
-        
+        self.set_last() # ADDED BY BAS
         
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
         self.time_since_update += 1
         
-        self.set_last() # ADDED BY BAS
+        
 
         
 
@@ -175,6 +175,7 @@ class Track:
         elif self.get_color() != detection.color:
             self.mean = self.last_mean
             self.covariance = self.last_covariance
+            self.colors.pop()
             self.features.append(detection.feature)
         ###
         

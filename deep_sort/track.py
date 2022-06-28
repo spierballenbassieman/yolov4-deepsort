@@ -175,8 +175,9 @@ class Track:
         elif self.get_color() != detection.color:
             self.mean = self.last_mean
             self.covariance = self.last_covariance
-            self.colors.pop()
             self.features.append(detection.feature)
+            if len(self.colors) > 0:
+                self.colors.pop()
         ###
         
         if detection.color is not None:

@@ -162,8 +162,7 @@ class Track:
             The associated detection.
 
         """
-        self.mean, self.covariance = kf.update(
-            self.mean, self.covariance, detection.to_xyah())
+        
         
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
@@ -176,6 +175,9 @@ class Track:
             
 #             if len(self.colors) > 0: # ADDED BY BAS
 #                self.colors.pop()
+
+        self.mean, self.covariance = kf.update(
+            self.mean, self.covariance, detection.to_xyah())
     
         if detection.color is not None:
                 if len(self.colors) < 300:

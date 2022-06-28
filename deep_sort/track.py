@@ -85,7 +85,7 @@ class Track:
         if color is not None:
             self.colors.append(color)
             
-#         self.last_color = color # ADDED BY BAS
+        self.last_color = color # ADDED BY BAS
 #         self.last_mean = mean
 #         self.last_covariance = covariance
 
@@ -131,8 +131,8 @@ class Track:
     def set_last(self):
         self.last_mean = self.mean
         self.last_covariance = self.covariance
-        if len(self.colors) > 0:
-            self.last_color = self.colors[-1]
+#         if len(self.colors) > 0:
+#             self.last_color = self.colors[-1]
         
     
     def predict(self, kf):
@@ -171,10 +171,10 @@ class Track:
             self.mean, self.covariance, detection.to_xyah())
         
         ### this part used to be just the features.append(detection.feature)
-        if self.colors[-1] == detection.color:
+        if self.last_color == detection.color:
             self.features.append(detection.feature)
                 
-        elif self.colors[-1] != detection.color:
+        elif self.last_color != detection.color:
             self.mean = self.last_mean
             self.covariance = self.last_covariance
             self.features.append(detection.feature)
@@ -186,10 +186,12 @@ class Track:
         if detection.color is not None:
                 if len(self.colors) < 300:
                     self.colors.append(detection.color)
+                    self.last_color = detection.color
                 else:
                     del self.colors[0]
                     self.colors.append(detection.color)
-        
+                    self.last_color = detection.color
+
         
         
                 

@@ -167,10 +167,19 @@ class Track:
             self.mean, self.covariance, detection.to_xyah())
         
         ### this part used to be just the features.append(detection.feature)
-        if self.last_color == detection.color:
+        if self.get_color() == detection.color:
             self.features.append(detection.feature)
                 
-        elif self.last_color != detection.color:
+            if detection.color is not None:
+                if len(self.colors) < 300:
+                    self.colors.append(detection.color)
+                    self.last_color = detection.color # ADDED BY BAS
+                else:
+                    del self.colors[0]
+                    self.colors.append(detection.color)
+                    self.last_color = detection.color # ADDED BY BAS
+                    
+        elif self.get_color() != detection.color:
             self.mean = self.last_mean # ADDED BY BAS
             self.covariance = self.last_covariance # ADDED BY BAS
             #self.features.append(detection.feature)
@@ -179,14 +188,7 @@ class Track:
             #   self.colors.pop()
 
 
-        if detection.color is not None:
-                if len(self.colors) < 300:
-                    self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
-                else:
-                    del self.colors[0]
-                    self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
+        
 
         self.hits += 1
         self.time_since_update = 0

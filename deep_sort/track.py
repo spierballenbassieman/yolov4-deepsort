@@ -163,7 +163,7 @@ class Track:
 
         """
     
-        self.set_last() # ADDED BY BAS
+        
 
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
@@ -197,7 +197,7 @@ class Track:
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
             
-         
+        self.set_last() # ADDED BY BAS
             
         
 

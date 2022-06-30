@@ -165,8 +165,7 @@ class Track:
     
         
 
-        self.mean, self.covariance = kf.update(
-            self.mean, self.covariance, detection.to_xyah())
+        
         
         
         ### this part used to be just the features.append(detection.feature)
@@ -193,6 +192,9 @@ class Track:
 
         
 
+        self.mean, self.covariance = kf.update(
+            self.mean, self.covariance, detection.to_xyah())
+        
         self.hits += 1
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:

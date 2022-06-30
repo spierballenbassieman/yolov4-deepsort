@@ -133,6 +133,8 @@ class Track:
     def set_last(self): # ADDED BY BAS
         self.last_mean = self.mean
         self.last_covariance = self.covariance    
+        if len(self.colors) > 0:
+            self.last_color = self.colors[-1]
     
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
@@ -149,6 +151,7 @@ class Track:
         self.age += 1
         self.time_since_update += 1
         
+        self.set_last()
 
     def update(self, kf, detection):
         """Perform Kalman filter measurement update step and update the feature
@@ -165,42 +168,41 @@ class Track:
     
         
 
-        
+        self.mean, self.covariance = kf.update(
+            self.mean, self.covariance, detection.to_xyah())
         
         
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
             self.features.append(detection.feature)
                 
+            if detection.color is not None:
+                if len(self.colors) < 300:
+                    self.colors.append(detection.color)
+                    #self.last_color = detection.color # ADDED BY BAS
+                else:
+                    del self.colors[0]
+                    self.colors.append(detection.color)
+                    #self.last_color = detection.color # ADDED BY BAS
             
         elif self.last_color != detection.color:
             self.mean = self.last_mean # ADDED BY BAS
             self.covariance = self.last_covariance # ADDED BY BAS
             self.features.append(detection.feature)
             
-            if len(self.colors) > 0: # ADDED BY BAS
-              self.colors.pop()
-
-        if detection.color is not None:
-                if len(self.colors) < 300:
-                    self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
-                else:
-                    del self.colors[0]
-                    self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
+#             if len(self.colors) > 0: # ADDED BY BAS
+#               self.colors.pop()
 
         
 
-        self.mean, self.covariance = kf.update(
-            self.mean, self.covariance, detection.to_xyah())
+        
+
         
         self.hits += 1
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
             
-        self.set_last() # ADDED BY BAS
 
         
 

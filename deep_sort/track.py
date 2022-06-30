@@ -168,6 +168,8 @@ class Track:
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
         
+        self.set_last() # ADDED BY BAS
+        
         ### this part used to be just the features.append(detection.feature)
         if self.last_color == detection.color:
             self.features.append(detection.feature)
@@ -197,7 +199,7 @@ class Track:
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
             
-        self.set_last() # ADDED BY BAS
+        
             
         
 

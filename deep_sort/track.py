@@ -183,11 +183,11 @@ class Track:
         if detection.color is not None:
                 if len(self.colors) < 300:
                     self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
+                    #self.last_color = detection.color # ADDED BY BAS
                 else:
                     del self.colors[0]
                     self.colors.append(detection.color)
-                    self.last_color = detection.color # ADDED BY BAS
+                    #self.last_color = detection.color # ADDED BY BAS
 
         self.hits += 1
         self.time_since_update = 0

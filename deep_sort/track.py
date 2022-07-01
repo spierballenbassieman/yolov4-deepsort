@@ -133,8 +133,8 @@ class Track:
     def set_last(self): # ADDED BY BAS
         self.last_mean = self.mean
         self.last_covariance = self.covariance    
-        if len(self.colors) > 0:
-            self.last_color = self.colors[-1]
+#         if len(self.colors) > 0:
+#             self.last_color = self.colors[-1]
     
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
@@ -167,7 +167,6 @@ class Track:
         """
     
         
-        #self.set_last()
         
         
         ### this part used to be just the features.append(detection.feature)
@@ -181,13 +180,18 @@ class Track:
             
             
         elif self.get_color() != detection.color:              
-            pass
-            #self.mean = self.last_mean # ADDED BY BAS
-            #self.covariance = self.last_covariance # ADDED BY BAS
-            #self.features.append(detection.feature)
+            #pass
+            self.mean = self.last_mean # ADDED BY BAS
+            self.covariance = self.last_covariance # ADDED BY BAS
+            
+            self.mean, self.covariance = kf.update(
+            self.mean, self.covariance, detection.to_xyah())
+            
+            self.features.append(detection.feature)
             
 #             if len(self.colors) > 0: # ADDED BY BAS
 #               self.colors.pop()
+
 
         if detection.color is not None:
                 if len(self.colors) < 300:
@@ -198,7 +202,8 @@ class Track:
                     self.colors.append(detection.color)
                     #self.last_color = detection.color # ADDED BY BAS
 
-        
+        self.set_last()
+
 
         
 

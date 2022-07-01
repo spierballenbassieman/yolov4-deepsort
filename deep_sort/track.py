@@ -180,12 +180,7 @@ class Track:
             
             
             
-        elif self.get_color() != detection.color:
-            if self.age < 3:
-                self.features.append(detection.feature)
-            
-                self.mean, self.covariance = kf.update(
-                self.mean, self.covariance, detection.to_xyah())                
+        elif self.get_color() != detection.color:              
             pass
             #self.mean = self.last_mean # ADDED BY BAS
             #self.covariance = self.last_covariance # ADDED BY BAS

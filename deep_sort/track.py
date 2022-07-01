@@ -187,7 +187,7 @@ class Track:
             self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
             
-            self.features.append(detection.feature)
+            #self.features.append(detection.feature)
             
 #             if len(self.colors) > 0: # ADDED BY BAS
 #               self.colors.pop()

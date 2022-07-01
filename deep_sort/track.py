@@ -179,8 +179,8 @@ class Track:
             
             
         elif self.last_color != detection.color:
-            self.mean = self.last_mean # ADDED BY BAS
-            self.covariance = self.last_covariance # ADDED BY BAS
+            #self.mean = self.last_mean # ADDED BY BAS
+            #self.covariance = self.last_covariance # ADDED BY BAS
             self.features.append(detection.feature)
             
 #             if len(self.colors) > 0: # ADDED BY BAS

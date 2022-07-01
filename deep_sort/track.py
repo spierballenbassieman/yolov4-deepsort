@@ -177,7 +177,18 @@ class Track:
             self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
             
-            if detection.color is not None:
+            
+            
+            
+        elif self.get_color() != detection.color:
+            self.mean = self.last_mean # ADDED BY BAS
+            self.covariance = self.last_covariance # ADDED BY BAS
+            #self.features.append(detection.feature)
+            
+#             if len(self.colors) > 0: # ADDED BY BAS
+#               self.colors.pop()
+
+        if detection.color is not None:
                 if len(self.colors) < 300:
                     self.colors.append(detection.color)
                     #self.last_color = detection.color # ADDED BY BAS
@@ -185,17 +196,6 @@ class Track:
                     del self.colors[0]
                     self.colors.append(detection.color)
                     #self.last_color = detection.color # ADDED BY BAS
-            
-            
-        elif self.get_color() != detection.color:
-            self.mean = self.last_mean # ADDED BY BAS
-            self.covariance = self.last_covariance # ADDED BY BAS
-            self.features.append(detection.feature)
-            
-#             if len(self.colors) > 0: # ADDED BY BAS
-#               self.colors.pop()
-
-        
 
         
 

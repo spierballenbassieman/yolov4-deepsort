@@ -167,14 +167,15 @@ class Track:
         """
     
         
-
-        self.mean, self.covariance = kf.update(
-            self.mean, self.covariance, detection.to_xyah())
+        self.set_last()
         
         
         ### this part used to be just the features.append(detection.feature)
         if self.get_color() == detection.color:
             self.features.append(detection.feature)
+            
+            self.mean, self.covariance = kf.update(
+            self.mean, self.covariance, detection.to_xyah())
             
             if detection.color is not None:
                 if len(self.colors) < 300:
@@ -189,14 +190,14 @@ class Track:
         elif self.get_color() != detection.color:
             self.mean = self.last_mean # ADDED BY BAS
             self.covariance = self.last_covariance # ADDED BY BAS
-            #self.features.append(detection.feature)
+            self.features.append(detection.feature)
             
 #             if len(self.colors) > 0: # ADDED BY BAS
 #               self.colors.pop()
 
         
 
-        self.set_last()
+        
 
         
 

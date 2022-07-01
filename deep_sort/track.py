@@ -167,7 +167,7 @@ class Track:
         """
     
         
-        self.set_last()
+        #self.set_last()
         
         
         ### this part used to be just the features.append(detection.feature)
@@ -181,8 +181,9 @@ class Track:
             
             
         elif self.get_color() != detection.color:
-            self.mean = self.last_mean # ADDED BY BAS
-            self.covariance = self.last_covariance # ADDED BY BAS
+            pass
+            #self.mean = self.last_mean # ADDED BY BAS
+            #self.covariance = self.last_covariance # ADDED BY BAS
             #self.features.append(detection.feature)
             
 #             if len(self.colors) > 0: # ADDED BY BAS

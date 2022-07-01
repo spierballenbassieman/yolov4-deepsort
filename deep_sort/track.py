@@ -151,7 +151,7 @@ class Track:
         self.age += 1
         self.time_since_update += 1
         
-        self.set_last()
+        
 
     def update(self, kf, detection):
         """Perform Kalman filter measurement update step and update the feature
@@ -193,7 +193,7 @@ class Track:
 #             if len(self.colors) > 0: # ADDED BY BAS
 #               self.colors.pop()
 
-        
+        self.set_last()
 
         
 

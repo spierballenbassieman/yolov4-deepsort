@@ -196,7 +196,7 @@ class Track:
 
         
 
-        #self.set_last()
+        self.set_last()
 
         
 

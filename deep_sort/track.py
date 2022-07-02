@@ -180,11 +180,14 @@ class Track:
             
             
         elif self.get_color() != detection.color:              
-            #pass
+            pass
             #self.mean = self.last_mean # ADDED BY BAS
             #self.covariance = self.last_covariance # ADDED BY BAS
             
-            self.features.append(detection.feature)
+#             self.features.append(detection.feature)
+            
+#             self.mean, self.covariance = kf.update(
+#             self.mean, self.covariance, detection.to_xyah())
             
 #             if len(self.colors) > 0: # ADDED BY BAS
 #               self.colors.pop()
@@ -199,7 +202,7 @@ class Track:
                     self.colors.append(detection.color)
                     #self.last_color = detection.color # ADDED BY BAS
 
-        self.set_last()
+#         self.set_last()
 
 
         

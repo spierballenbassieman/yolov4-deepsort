@@ -39,7 +39,7 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
-flags.DEFINE_list('jersey_colors', ['white', 'blue'], 'list of jersey colors Team1, Team 2, optional: other')
+flags.DEFINE_list('jersey_colors', ['white', 'blue','yellow'], 'list of jersey colors Team1, Team 2, optional: other')
 flags.DEFINE_float('color_threshold', 0.0, 'color detection min percentage to assign jersey color to player')
 flags.DEFINE_float('cosine', 0.4, 'max cosine distance')
 flags.DEFINE_float('nms_overlap', 1.0, 'NMS max overlap')
@@ -234,7 +234,7 @@ def main(_argv):
             if jersey_color == jersey_colors[0]:
                 color = [255, 0, 0]
                 team_name = 'Team 1'
-            elif jersey_color == jersey_colors[1]:
+            elif jersey_color == jersey_colors[1] or jersey_color == jersey_colors[2]:
                 color = [0, 0, 255]
                 team_name = 'Team 2'
             else:

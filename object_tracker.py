@@ -229,6 +229,10 @@ def main(_argv):
             if not track.is_confirmed() or track.time_since_update > 1:
 
                 ###
+                bbox = track.to_tlbr()
+                color = [105, 105, 105]
+                class_name = "unmatched detection"
+
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)), (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color,-1)
                 cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,(255, 255, 255), 2)

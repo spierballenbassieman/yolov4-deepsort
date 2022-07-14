@@ -39,7 +39,7 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
-flags.DEFINE_list('jersey_colors', ['white', 'blue','yellow'], 'list of jersey colors Team1, Team 2, optional: other')
+flags.DEFINE_list('jersey_colors', ['white', 'blue'], 'list of jersey colors Team1, Team 2, optional: other')
 flags.DEFINE_float('color_threshold', 0.0, 'color detection min percentage to assign jersey color to player')
 flags.DEFINE_float('cosine', 0.4, 'max cosine distance')
 flags.DEFINE_float('nms_overlap', 1.0, 'NMS max overlap')
@@ -222,19 +222,26 @@ def main(_argv):
 
         # Call the tracker
         tracker.predict()
-        tracker.update(detections)
+        tracker.update(detections) # HIERO DE GRIJZE DETECTION
 
         # update tracks
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
-                continue 
+
+                ###
+                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
+                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)), (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color,-1)
+                cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,(255, 255, 255), 2)
+                ###
+                continue
+
             bbox = track.to_tlbr()
             class_name = track.get_class()
             jersey_color = track.get_color()
             if jersey_color == jersey_colors[0]:
                 color = [255, 0, 0]
                 team_name = 'Team 1'
-            elif jersey_color == jersey_colors[1] or jersey_color == jersey_colors[2]:
+            elif jersey_color == jersey_colors[1]:
                 color = [0, 0, 255]
                 team_name = 'Team 2'
             else:

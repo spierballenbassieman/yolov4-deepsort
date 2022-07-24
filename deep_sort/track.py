@@ -81,15 +81,11 @@ class Track:
         self._max_age = max_age
         self.class_name = class_name
         
+        self.color_confirmed = False
+        self.confirmed_color = None
         self.colors = []
         if color is not None:
             self.colors.append(color)
-            
-        ## ADDED BY BAS
-        self.last_color = color
-        self.last_mean = mean 
-        self.last_covariance = covariance
-        ###
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -125,16 +121,18 @@ class Track:
 
     def get_color(self):
         """Return color that has been detected most often for this track"""
-        if self.colors:
+        
+        ##
+        if self.color_confirmed:
+            return self.confirmed_color
+        ##
+        
+        elif self.colors:
             return max(set(self.colors), key=self.colors.count)
         else:
             return None
         
-    def set_last(self): # ADDED BY BAS
-        self.last_mean = self.mean
-        self.last_covariance = self.covariance    
-#         if len(self.colors) > 0:
-#             self.last_color = self.colors[-1]
+        
     
     def predict(self, kf):
         """Propagate the state distribution to the current time step using a
@@ -165,11 +163,7 @@ class Track:
             The associated detection.
 
         """
-    
-        
-        
-        
-        ### this part used to be just the features.append(detection.feature)
+            
         if self.get_color() == detection.color:
             self.features.append(detection.feature)
             
@@ -194,7 +188,12 @@ class Track:
                 else:
                     del self.colors[0]
                     self.colors.append(detection.color)
-        
+                    
+                ## ADDED THIS, To avoid looping in the get_color function every time
+                if not self.color_confirmed and len(self.colors) > 6:
+                    self.confirmed_color = self.get_color()
+                    self.color_confirmed = True
+
 
         
 #         self.hits += 1

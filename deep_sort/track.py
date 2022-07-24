@@ -176,42 +176,31 @@ class Track:
             self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
             
-            
+            ## MOVED THIS FROM END OF FUNCTION
+            self.hits += 1
+            self.time_since_update = 0
+            if self.state == TrackState.Tentative and self.hits >= self._n_init:
+                self.state = TrackState.Confirmed
+            ###
             
             
         elif self.get_color() != detection.color:              
             pass
-            #self.mean = self.last_mean # ADDED BY BAS
-            #self.covariance = self.last_covariance # ADDED BY BAS
-            
-#             self.features.append(detection.feature)
-            
-#             self.mean, self.covariance = kf.update(
-#             self.mean, self.covariance, detection.to_xyah())
-            
-#             if len(self.colors) > 0: # ADDED BY BAS
-#               self.colors.pop()
 
 
         if detection.color is not None:
                 if len(self.colors) < 300:
                     self.colors.append(detection.color)
-                    #self.last_color = detection.color # ADDED BY BAS
                 else:
                     del self.colors[0]
                     self.colors.append(detection.color)
-                    #self.last_color = detection.color # ADDED BY BAS
-
-#         self.set_last()
-
-
         
 
         
-        self.hits += 1
-        self.time_since_update = 0
-        if self.state == TrackState.Tentative and self.hits >= self._n_init:
-            self.state = TrackState.Confirmed
+#         self.hits += 1
+#         self.time_since_update = 0
+#         if self.state == TrackState.Tentative and self.hits >= self._n_init:
+#             self.state = TrackState.Confirmed
             
 
         

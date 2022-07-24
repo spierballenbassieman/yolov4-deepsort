@@ -228,7 +228,7 @@ def main(_argv):
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
 
-                ###
+                ### Unnecessary?
                 bbox = track.to_tlbr()
                 color = [105, 105, 105]
                 class_name = "unmatched detection"

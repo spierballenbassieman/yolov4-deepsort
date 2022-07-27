@@ -172,7 +172,7 @@ class Track:
             
             ## MOVED THIS FROM END OF FUNCTION
             self.hits += 1
-            self.time_since_update = 0
+            
             if self.state == TrackState.Tentative and self.hits >= self._n_init:
                 self.state = TrackState.Confirmed
             ###
@@ -194,7 +194,7 @@ class Track:
                     self.confirmed_color = self.get_color()
                     self.color_confirmed = True
 
-
+        self.time_since_update = 0
         
 #         self.hits += 1
 #         self.time_since_update = 0

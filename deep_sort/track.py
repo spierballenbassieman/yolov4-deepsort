@@ -65,6 +65,7 @@ class Track:
 
     def __init__(self, mean, covariance, track_id, n_init, max_age,
                  feature=None, class_name=None, color=None):
+
         self.mean = mean
         self.covariance = covariance
         self.track_id = track_id
@@ -80,12 +81,14 @@ class Track:
         self._n_init = n_init
         self._max_age = max_age
         self.class_name = class_name
-        
-        self.color_confirmed = False
-        self.confirmed_color = None
         self.colors = []
         if color is not None:
             self.colors.append(color)
+
+        # Added by Bas:
+        self.color_confirmed = False
+        self.confirmed_color = None
+
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -122,16 +125,16 @@ class Track:
     def get_color(self):
         """Return color that has been detected most often for this track"""
         
-        ##
+        # if-statement added by Bas
         if self.color_confirmed:
-            return self.confirmed_color
-        ##
-        
-        elif self.colors:
+            return self.confirmed_color # to avoid the color count at every step
+
+        if self.colors:
             return max(set(self.colors), key=self.colors.count)
+            
         else:
             return None
-        
+   
         
     
     def predict(self, kf):
@@ -144,12 +147,34 @@ class Track:
             The Kalman filter.
 
         """
-        
+
+
         self.mean, self.covariance = kf.predict(self.mean, self.covariance)
         self.age += 1
         self.time_since_update += 1
         
+        self.last_mean = self.mean
+        self.last_covariance = self.covariance
+
+        # if-block added by Bas
+    	# if the prediction bbox hits the top of the screen, delete track (otherwise very unpredictably behaviour, bboxes appear at random locations on the screen).
+        # Possibly want something similar for bottom of the screen
+        # of misschien is dit op een andere manier op te lossen.
+
+        # self.to_tlbr in bbox format `(min x, min y, max x, max y)`
+        # if min y is kleiner dan 40.0:
+        if self.to_tlbr()[1] < 40.0 or self.to_tlbr()[0] > 1918: 
+
+            self.state = TrackState.Deleted
+            return
         
+        # Added by Bas. To avoid very large expanding bboxes.  Possibly combine with previous if-statement.
+        # Zie ook de if-statements mbt bboxes in object_tracker.py. Maybe want to combine some of it?
+        elif self.to_tlwh()[3] > 170:
+
+            self.state = TrackState.Deleted
+            return
+
 
     def update(self, kf, detection):
         """Perform Kalman filter measurement update step and update the feature
@@ -163,24 +188,13 @@ class Track:
             The associated detection.
 
         """
-            
-        if self.get_color() == detection.color:
-            self.features.append(detection.feature)
-            
-            self.mean, self.covariance = kf.update(
-            self.mean, self.covariance, detection.to_xyah())
-            
-            ## MOVED THIS FROM END OF FUNCTION
-            self.hits += 1
-            
-            if self.state == TrackState.Tentative and self.hits >= self._n_init:
-                self.state = TrackState.Confirmed
-            ###
-            
-            
-        elif self.get_color() != detection.color:              
-            pass
+        
+        self.mean, self.covariance = kf.update(
+                self.mean, self.covariance, detection.to_xyah())   
 
+
+        self.features.append(detection.feature)
+        
 
         if detection.color is not None:
                 if len(self.colors) < 300:
@@ -189,21 +203,31 @@ class Track:
                     del self.colors[0]
                     self.colors.append(detection.color)
                     
-                ## ADDED THIS, To avoid looping in the get_color function every time
-                if not self.color_confirmed and len(self.colors) > 6:
+                ## Added this, to avoid the looping in the get_color function every time
+                if not self.color_confirmed and len(self.colors) > 16:
                     self.confirmed_color = self.get_color()
                     self.color_confirmed = True
 
+        ## this block added by Bas. 
+        # Comment out if you want to use the other method described in linear_assignment.py.
+        # Deze code is de reden dat er soms een prediction als een detection gerendered wordt.
+        if self.color_confirmed and (self.confirmed_color != self.colors[-1]): 
+            self.colors.pop()
+            self.mean = self.last_mean
+            self.covariance = self.last_covariance
+
+            self.hits -= 1 
+
+            return
+
+
         self.time_since_update = 0
-        
-#         self.hits += 1
-#         self.time_since_update = 0
-#         if self.state == TrackState.Tentative and self.hits >= self._n_init:
-#             self.state = TrackState.Confirmed
-            
+        self.hits += 1
+                
+        if self.state == TrackState.Tentative and self.hits >= self._n_init:
+                    self.state = TrackState.Confirmed
 
         
-
     def mark_missed(self):
         """Mark this track as missed (no association at the current time step).
         """

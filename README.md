@@ -10,6 +10,16 @@ Object tracking implemented with YOLOv4, DeepSort, and TensorFlow. YOLOv4 is a s
 ## Demo of Object Tracker on Cars
 <p align="center"><img src="data/helpers/cars.gif"\></p>
 
+## Video gebruikt voor testen was de ISSIA dataset
+De lange filmpjes waren te groot om te uploaden. In de map data zitten wel twee ingekorte fragmenten.
+
+https://pspagnolo.jimdofree.com/download/
+of direct:
+https://www.dropbox.com/s/3zhms9iv4gy3k81/Sequences.zip?dl=1
+
+Ik denk dat ID-3 en ID-4 de beste filmpjes zijn om te testen qua occlusions etc.
+
+
 ## Getting Started
 To get started, install the proper dependencies either via Anaconda or Pip. I recommend Anaconda route for people using a GPU as it configures CUDA toolkit version for you.
 

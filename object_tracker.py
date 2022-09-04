@@ -39,8 +39,8 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
-flags.DEFINE_list('jersey_colors', ['white', 'blue'], 'list of jersey colors Team1, Team 2, optional: other')
-flags.DEFINE_float('color_threshold', 0.0, 'color detection min percentage to assign jersey color to player')
+flags.DEFINE_list('jersey_colors', ['white','blue','yellow'], 'list of jersey colors Team1, Team 2, optional: other')
+flags.DEFINE_float('color_threshold', 0.05, 'color detection min percentage to assign jersey color to player')
 flags.DEFINE_float('cosine', 0.4, 'max cosine distance')
 flags.DEFINE_float('nms_overlap', 1.0, 'NMS max overlap')
 flags.DEFINE_integer('max_age', 60, 'deep sort max age parameter')
@@ -159,6 +159,11 @@ def main(_argv):
         original_h, original_w, _ = frame.shape
         bboxes = utils.format_boxes(bboxes, original_h, original_w)
 
+        # print(bboxes[0])
+        # print()
+        # print(bboxes[2])
+        # print()
+
         # store all predictions in one parameter for simplicity when calling functions
         pred_bbox = [bboxes, scores, classes, num_objects]
 
@@ -169,7 +174,8 @@ def main(_argv):
         #allowed_classes = list(class_names.values())
         
         # custom allowed classes (uncomment line below to customize tracker for only people)
-        allowed_classes = ['person', 'sports ball']
+        #allowed_classes = ['person', 'sports ball']
+        allowed_classes = ['person']
 
         # loop through objects and use class index to get class name, allow only classes in allowed_classes list
         names = []
@@ -177,8 +183,20 @@ def main(_argv):
         for i in range(num_objects):
             class_indx = int(classes[i])
             class_name = class_names[class_indx]
-            if class_name not in allowed_classes:
+            # Zie comment achter volgende regel!
+            #print(bboxes[i][1] - bboxes[i][3])  
+            #print(bboxes[i][0] - bboxes[i][2]) 
+            #print()
+            if bboxes[i][2] < 0.0:
+                print("JASDAS")
+                print()
+                print()
+            #if (class_name not in allowed_classes) or (bboxes[i][3] < 60.0) or (bboxes[i][1] < 5.0) or (-12 < (bboxes[i][1] - bboxes[i][3]) < 12.0) or (((bboxes[i][1] - bboxes[i][3]) > 250.0) or (bboxes[i][1] - bboxes[i][3]) < -250.0): # or-statements added by Bas, last or-statement to remove weird very large bboxes, the one before to remove really small bboxes. Otherwise the small bboxes implode and turn into really big ones on random locations.
+#            if (class_name not in allowed_classes) or (-12 < (bboxes[i][1] - bboxes[i][3]) < 12.0) or (((bboxes[i][1] - bboxes[i][3]) > 250.0) or (bboxes[i][1] - bboxes[i][3]) < -250.0): # or-statements added by Bas, last or-statement to remove weird very large bboxes, the one before to remove really small bboxes. Otherwise the small bboxes implode and turn into really big ones on random locations.
+            if (class_name not in allowed_classes) or (bboxes[i][1] < 60.0) or ((bboxes[i][0] + bboxes[i][3]) < 5.0) or (bboxes[i][3] < 8.0) or (bboxes[i][3] > 250.0): # or-statements added by Bas, last or-statement to remove weird very large bboxes, the one before to remove really small bboxes. Otherwise the small bboxes implode and turn into really big ones on random locations.
+
                 deleted_indx.append(i)
+
             else:
                 names.append(class_name)
         names = np.array(names)
@@ -186,10 +204,12 @@ def main(_argv):
         if FLAGS.count:
             cv2.putText(frame, "Objects being tracked: {}".format(count), (5, 35), cv2.FONT_HERSHEY_COMPLEX_SMALL, 2, (0, 255, 0), 2)
             print("Objects being tracked: {}".format(count))
+
         # delete detections that are not in allowed_classes
         bboxes = np.delete(bboxes, deleted_indx, axis=0)
         scores = np.delete(scores, deleted_indx, axis=0)
 
+        
         # encode yolo detections and feed to tracker
         #features = encoder(frame, bboxes)
         #detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(bboxes, scores, names, features)]
@@ -202,7 +222,7 @@ def main(_argv):
         patches = [gdet.extract_image_patch(frame, box, [box[3], box[2]]) for box in bboxes]
         colors = [find_color(patch, FLAGS.jersey_colors, threshold = FLAGS.color_threshold)
                   for patch in patches]
-        
+
         # encode yolo detections and feed to tracker
         features = encoder(frame, bboxes)
         
@@ -212,44 +232,79 @@ def main(_argv):
         else:
             detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature
                           in zip(bboxes, scores, names, features)]
+
             
         # run non-maxima supression
         boxs = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
         classes = np.array([d.class_name for d in detections])
         indices = preprocessing.non_max_suppression(boxs, classes, nms_max_overlap, scores)
-        detections = [detections[i] for i in indices]       
-
+        detections = [detections[i] for i in indices]
+  
         # Call the tracker
         tracker.predict()
         tracker.update(detections) # HIERO DE GRIJZE DETECTION
 
         # update tracks
         for track in tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:
-
-                ### Unnecessary?
+            
+            # you can of course delete these first two if-statements to improve FPS
+            if not track.is_confirmed():
+                ###
                 bbox = track.to_tlbr()
-                color = [105, 105, 105]
-                class_name = "unmatched detection"
+                color = [255, 255, 100]
+                class_name = "tentative"
 
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)), (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color,-1)
                 cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,(255, 255, 255), 2)
                 ###
-                continue
+                continue 
+
+            elif track.time_since_update > 1 and not track.is_deleted():
+                ###
+                bbox = track.to_tlbr()
+                color = [105, 105, 105]
+                class_name = "pred. track"
+
+                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
+                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)), (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color,-1)
+                cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,(255, 255, 255), 2)
+                ###
+                continue 
+
+            # TESTJE
+            # elif (track.time_since_update == 1) and not track.is_deleted():
+            #     bbox = track.to_tlbr()
+            #     color = [35, 35, 35]
+            #     class_name = "TEST track"
+
+            #     cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
+            #     cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)), (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color,-1)
+            #     cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,(255, 255, 255), 2)
+            #     ###
+            #     continue 
+
 
             bbox = track.to_tlbr()
             class_name = track.get_class()
             jersey_color = track.get_color()
+            
             if jersey_color == jersey_colors[0]:
-                color = [255, 0, 0]
-                team_name = 'Team 1'
-            elif jersey_color == jersey_colors[1]:
                 color = [0, 0, 255]
+                team_name = 'Team 1'
+
+            elif jersey_color == jersey_colors[1]:
+
+                color = [255, 0, 0]
                 team_name = 'Team 2'
+
+            elif len(jersey_colors) > 2 and jersey_color == jersey_colors[2]:
+                color = [255, 165, 0]
+                team_name = 'referee'
+
             else:
-                color = [105, 105, 105]
+                color = [25, 25, 25]
                 team_name = 'Other'
             
         # draw bbox on screen
@@ -258,7 +313,7 @@ def main(_argv):
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
             cv2.putText(frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
-
+            
         # if enable info flag then print details about each track
             if FLAGS.info:
                 print("Tracker ID: {}, Class: {},  BBox Coords (xmin, ymin, xmax, ymax): {}".format(str(track.track_id), class_name, (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))))

@@ -68,11 +68,17 @@ def min_cost_matching(
     for row, col in indices:
         track_idx = track_indices[row]
         detection_idx = detection_indices[col]
-        if cost_matrix[row, col] > max_distance:
+
+        # Comment added by Bas
+        # The commented or-statement in the line below is another way (as opposed to the first if-block in the track.update function) of handling invalid jersey color.
+        # However, one color mismatch directly creates a new track using this way. See "alternative_methode_voor_jersey_color_result.avi"
+        if cost_matrix[row, col] > max_distance: # or (tracks[track_idx].is_confirmed() and tracks[track_idx].get_color() != detections[detection_idx].get_color()): 
             unmatched_tracks.append(track_idx)
             unmatched_detections.append(detection_idx)
+
         else:
             matches.append((track_idx, detection_idx))
+
     return matches, unmatched_tracks, unmatched_detections
 
 
@@ -189,3 +195,4 @@ def gate_cost_matrix(
             track.mean, track.covariance, measurements, only_position)
         cost_matrix[row, gating_distance > gating_threshold] = gated_cost
     return cost_matrix
+

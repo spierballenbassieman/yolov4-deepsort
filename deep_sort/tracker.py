@@ -55,6 +55,7 @@ class Tracker:
         for track in self.tracks:
             track.predict(self.kf)
 
+
     def update(self, detections):
         """Perform measurement update and track management.
 
@@ -67,15 +68,20 @@ class Tracker:
         # Run matching cascade.
         matches, unmatched_tracks, unmatched_detections = \
             self._match(detections)
-
+        
         # Update track set.
         for track_idx, detection_idx in matches:
-            self.tracks[track_idx].update(
+            
+            if not self.tracks[track_idx].is_deleted(): #ADDED
+                self.tracks[track_idx].update(
                 self.kf, detections[detection_idx])
+
         for track_idx in unmatched_tracks:
             self.tracks[track_idx].mark_missed()
+
         for detection_idx in unmatched_detections:
             self._initiate_track(detections[detection_idx])
+
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
 
         # Update distance metric.
@@ -86,9 +92,12 @@ class Tracker:
                 continue
             features += track.features
             targets += [track.track_id for _ in track.features]
-            track.features = []
+            track.features = [] # Or maybe even just comment out this one?
+
+
         self.metric.partial_fit(
             np.asarray(features), np.asarray(targets), active_targets)
+
 
     def _match(self, detections):
 
@@ -126,8 +135,10 @@ class Tracker:
                 iou_matching.iou_cost, self.max_iou_distance, self.tracks,
                 detections, iou_track_candidates, unmatched_detections)
 
-        matches = matches_a + matches_b
+        matches = list(set(matches_a + matches_b))
+
         unmatched_tracks = list(set(unmatched_tracks_a + unmatched_tracks_b))
+
         return matches, unmatched_tracks, unmatched_detections
 
     def _initiate_track(self, detection):
@@ -136,5 +147,5 @@ class Tracker:
         color = detection.get_color()
         self.tracks.append(Track(
             mean, covariance, self._next_id, self.n_init, self.max_age,
-            detection.feature, class_name))
+            detection.feature, class_name, color)) # ADDED color by Bas
         self._next_id += 1
